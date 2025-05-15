@@ -1,0 +1,106 @@
+#Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+
+#Read csv file
+df = pd.read_csv("/content/retail_sales_dataset.csv")
+
+#Details of csv files
+df.head(4)
+df.tail(5)
+df.info()
+
+#Show dupicates
+df.drop_duplicates()
+df
+
+#null values
+df.isnull().sum()
+
+#describe data
+df.describe()
+
+#mode
+df.mode().dropna()
+df = df.sort_values(by = "Date")
+df.head(5)
+
+#Sales on date
+df["Date"] = pd.to_datetime(df["Date"])
+df["Month"]= df["Date"].dt.month
+df["Year"]=df["Date"].dt.year
+
+#Total amount per day
+plt.figure(figsize =(15,5))
+sns.lineplot(x="Date", y="Total Amount", data =df)
+plt.title('Total amount per day')
+plt.show()
+
+#Groupedby monthly sales
+Monthly_sales = df.groupby(["Year","Month"], as_index=False)["Total Amount"].sum()
+df['Monthly_sales']= Monthly_sales['Total Amount']
+
+#Line chart on monthly sales
+plt.figure(figsize=(8,5))
+sns.lineplot(x ="Month", y="Monthly_sales", data=df)
+plt.title('monthly sales')
+plt.show()
+
+#Sales on date
+df = df.drop(['Month','Year','Monthly_sales'], axis=1)
+df.head(10)
+
+#Groupedby age
+age_bins = [10, 20, 30, 40, 50, 60]
+age_labels = ['10-19', '20-29', '30-39', '40-49', '50+']
+df["Age group"] = pd.cut(df["Age"], bins =age_bins, labels= age_labels, right= True)
+
+Total_amount_by_age = df.groupby('Age group') ['Total Amount'].sum()
+print(Total_amount_by_age)
+
+#Grouped data
+Grouped_data = df.groupby (['Age group', 'Product Category']) ['Total Amount'].sum().reset_index()
+
+#Bar chart on Spending Patterns by Age Group and Product Category
+plt.figure(figsize=(8, 6))
+sns.barplot(x='Age group', y='Total Amount', hue='Product Category', data=Grouped_data)
+plt.title('Spending Patterns by Age Group and Product Category')
+plt.xlabel('Age Group')
+plt.ylabel('Total Amount')
+plt.show()
+
+#total spent on both genders
+Gender_Totalspend = df.groupby('Gender') ['Total Amount'].sum().reset_index()
+print(Gender_Totalspend)
+
+#Bar chart Genders total amount on slaes
+plt.figure(figsize = (5,5))
+plt.bar(Gender_Totalspend[ 'Gender'], Gender_Totalspend['Total Amount'], color = ['pink', 'black'])
+plt.title('Genders total amount on slaes')
+plt.xlabel('Gender')
+plt.ylabel('Total Amount')
+plt.show()
+
+#Avg of mean gender 
+Avg_amount_by_Gender = df.groupby('Gender') ['Total Amount'].mean()
+print(Avg_amount_by_Gender)
+
+#Total groupedby Total Amount sum
+Total_revenue = df.groupby('Product Category') ['Total Amount'].sum().reset_index()
+print(Total_revenue)
+
+#Bar chart on Total revenue from Each Product
+plt.figure(figsize = (5,5))
+plt.bar(Total_revenue[ 'Product Category'], Total_revenue['Total Amount'], color = ['black', 'brown', 'pink'])
+plt.title('Total revenue from Each Product')
+plt.xlabel('Product Category')
+plt.ylabel('Total Amount')
+plt.show()
+
+#Total groupedby quality sum
+Total_num = df.groupby('Product Category') ['Quantity'].sum().reset_index()
+print(Total_num)
